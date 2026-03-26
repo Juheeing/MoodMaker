@@ -24,6 +24,8 @@ struct ContentView: View {
             
             // 사진 선택 버튼
             selectButton
+            
+            musicControlButton
         }
         .padding()
         .sheet(isPresented: $showPicker) {
@@ -82,5 +84,28 @@ struct ContentView: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(viewModel.isAnalyzing)
+    }
+    
+    // MARK: - 재생/정지 버튼
+    private var musicControlButton: some View {
+        Group {
+            if viewModel.moodResult != nil {
+                Button {
+                    if viewModel.isPlaying {
+                        viewModel.stopMusic()
+                    } else {
+                        if let profile = viewModel.moodResult?.profile {
+                            viewModel.playMusic(profile: profile)
+                        }
+                    }
+                } label: {
+                    Label(
+                        viewModel.isPlaying ? "정지" : "재생",
+                        systemImage: viewModel.isPlaying ? "stop.fill" : "play.fill"
+                    )
+                }
+                .buttonStyle(.bordered)
+            }
+        }
     }
 }
