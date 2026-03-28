@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // 음계 종류
 enum Scale {
@@ -51,6 +52,28 @@ struct MusicProfile {
         default:          return "🎵"
         }
     }
+    
+    // 분위기별 그라디언트 컬러
+    var gradientColors: [Color] {
+        switch mood {
+        case "calm":      return [Color(hex: "1a8a9a"), Color(hex: "0d3b4f")]
+        case "sad":       return [Color(hex: "4a5568"), Color(hex: "1a202c")]
+        case "energetic": return [Color(hex: "f6ad55"), Color(hex: "e53e3e")]
+        case "romantic":  return [Color(hex: "ed8936"), Color(hex: "9b2c2c")]
+        default:          return [Color(hex: "2d3748"), Color(hex: "1a202c")]
+        }
+    }
+    
+    // 분위기별 강조 컬러
+    var accentColor: Color {
+        switch mood {
+        case "calm":      return Color(hex: "76e4f7")
+        case "sad":       return Color(hex: "a0aec0")
+        case "energetic": return Color(hex: "fbd38d")
+        case "romantic":  return Color(hex: "feb2b2")
+        default:          return .white
+        }
+    }
 }
 
 // 분위기 → 음악 파라미터 매핑 테이블
@@ -88,3 +111,15 @@ let moodProfileMap: [String: MusicProfile] = [
         volume:     0.75
     )
 ]
+
+extension Color {
+    init(hex: String) {
+        let scanner = Scanner(string: hex)
+        var rgbValue: UInt64 = 0
+        scanner.scanHexInt64(&rgbValue)
+        let r = Double((rgbValue & 0xff0000) >> 16) / 255
+        let g = Double((rgbValue & 0x00ff00) >> 8) / 255
+        let b = Double(rgbValue & 0x0000ff) / 255
+        self.init(red: r, green: g, blue: b)
+    }
+}
