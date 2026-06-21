@@ -10,16 +10,15 @@ import Combine
 
 class MoodViewModel: ObservableObject {
     
-    // View가 관찰하는 상태값들
     @Published var moodResult: MoodClassifierService.MoodResult? = nil
     @Published var isAnalyzing: Bool = false
     @Published var errorMessage: String? = nil
     @Published var isPlaying: Bool = false
+    @Published var isLoadingMusic: Bool = false  // 추가: 음악 검색 중 로딩
     
     private let classifier = MoodClassifierService()
     private let musicGenerator = MusicGeneratorService()
     
-    // 분위기 분석 실행
     func analyze(image: UIImage) {
         isAnalyzing = true
         errorMessage = nil
@@ -39,9 +38,20 @@ class MoodViewModel: ObservableObject {
         }
     }
     
+    // 수정: 음악 검색 + 재생
     func playMusic(profile: MusicProfile) {
-        musicGenerator.play(profile: profile)
-        isPlaying = true
+        isLoadingMusic = true
+        
+        musicGenerator.play(profile: profile) { [weak self] success in
+            DispatchQueue.main.async {
+                self?.isLoadingMusic = false
+                if success {
+                    self?.isPlaying = true
+                } else {
+                    self?.errorMessage = "음악을 찾지 못했어요. 다시 시도해주세요."
+                }
+            }
+        }
     }
     
     func stopMusic() {

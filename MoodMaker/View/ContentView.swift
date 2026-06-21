@@ -207,11 +207,19 @@ struct ContentView: View {
                         Circle()
                             .fill(.white.opacity(0.15))
                             .frame(width: 72, height: 72)
-                        Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white)
+                        
+                        // 수정: 로딩 중이면 스피너 표시
+                        if viewModel.isLoadingMusic {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
+                .disabled(viewModel.isLoadingMusic)
                 
                 // 공유 버튼
                 Button {

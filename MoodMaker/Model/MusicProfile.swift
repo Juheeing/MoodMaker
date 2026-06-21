@@ -112,6 +112,13 @@ let moodProfileMap: [String: MusicProfile] = [
     )
 ]
 
+let moodSearchKeywords: [String: [String]] = [
+    "calm":      ["ambient piano", "peaceful instrumental", "calm relaxing music"],
+    "sad":       ["sad piano", "melancholic instrumental", "emotional ballad"],
+    "energetic": ["upbeat electronic", "energetic pop", "energetic dance"],
+    "romantic":  ["romantic guitar", "love acoustic", "romantic piano"]
+]
+
 extension Color {
     init(hex: String) {
         let scanner = Scanner(string: hex)
