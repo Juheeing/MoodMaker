@@ -14,7 +14,7 @@ class MoodViewModel: ObservableObject {
     @Published var isAnalyzing: Bool = false
     @Published var errorMessage: String? = nil
     @Published var isPlaying: Bool = false
-    @Published var isLoadingMusic: Bool = false  // 추가: 음악 검색 중 로딩
+    @Published var isLoadingMusic: Bool = false
     
     private let classifier = MoodClassifierService()
     private let musicGenerator = MusicGeneratorService()
@@ -30,7 +30,7 @@ class MoodViewModel: ObservableObject {
                 self?.isAnalyzing = false
                 if let result = result {
                     self?.moodResult = result
-                    self?.playMusic(profile: result.profile)
+                    self?.playNewMusic(profile: result.profile)  // 이름 변경: 새 곡 검색
                 } else {
                     self?.errorMessage = "분석에 실패했어요. 다시 시도해주세요."
                 }
@@ -38,8 +38,8 @@ class MoodViewModel: ObservableObject {
         }
     }
     
-    // 수정: 음악 검색 + 재생
-    func playMusic(profile: MusicProfile) {
+    // 새 곡을 검색해서 재생 (분위기 바뀔 때만)
+    func playNewMusic(profile: MusicProfile) {
         isLoadingMusic = true
         
         musicGenerator.play(profile: profile) { [weak self] success in
@@ -51,6 +51,17 @@ class MoodViewModel: ObservableObject {
                     self?.errorMessage = "음악을 찾지 못했어요. 다시 시도해주세요."
                 }
             }
+        }
+    }
+    
+    // 재생/일시정지 토글 (같은 곡 유지)
+    func togglePlayPause() {
+        if isPlaying {
+            musicGenerator.pause()
+            isPlaying = false
+        } else {
+            musicGenerator.resume()
+            isPlaying = true
         }
     }
     

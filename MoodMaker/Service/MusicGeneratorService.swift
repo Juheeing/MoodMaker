@@ -12,13 +12,12 @@ class MusicGeneratorService {
     private var player: AVPlayer?
     private(set) var isPlaying = false
     
-    // MARK: - 재생 (분위기 받아서 검색 → 재생)
+    // MARK: - 새 곡 검색 후 재생 (분위기 바뀔 때만 호출)
     func play(profile: MusicProfile, completion: @escaping (Bool) -> Void) {
         stop()
         
         guard let keywords = moodSearchKeywords[profile.mood],
               let keyword = keywords.randomElement() else {
-            print("❌ 검색 키워드 없음: \(profile.mood)")
             completion(false)
             return
         }
@@ -26,9 +25,20 @@ class MusicGeneratorService {
         searchAndPlay(keyword: keyword, volume: profile.volume, completion: completion)
     }
     
+    // MARK: - 일시정지 (추가)
+    func pause() {
+        player?.pause()
+        isPlaying = false
+    }
+    
+    // MARK: - 이어서 재생 (추가)
+    func resume() {
+        player?.play()
+        isPlaying = true
+    }
+    
     // MARK: - iTunes 검색
     private func searchAndPlay(keyword: String, volume: Float, completion: @escaping (Bool) -> Void) {
-        
         guard let encodedKeyword = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
               let url = URL(string: "https://itunes.apple.com/search?term=\(encodedKeyword)&media=music&limit=15") else {
             completion(false)
@@ -43,16 +53,14 @@ class MusicGeneratorService {
                 DispatchQueue.main.async { completion(false) }
                 return
             }
-            
-            guard let data = data else {
+
+            if error != nil || data == nil {
                 DispatchQueue.main.async { completion(false) }
                 return
             }
             
             do {
-                let result = try JSONDecoder().decode(iTunesSearchResult.self, from: data)
-                
-                // previewUrl이 있는 트랙만 필터링
+                let result = try JSONDecoder().decode(iTunesSearchResult.self, from: data!)
                 let validTracks = result.results.filter { $0.previewUrl != nil }
                 
                 guard let track = validTracks.randomElement(),
@@ -74,11 +82,10 @@ class MusicGeneratorService {
                 print("❌ JSON 파싱 오류: \(error)")
                 DispatchQueue.main.async { completion(false) }
             }
-            
         }.resume()
     }
     
-    // MARK: - 스트리밍 재생
+    // MARK: - 스트리밍 재생 시작
     private func playStream(url: URL, volume: Float) {
         let playerItem = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: playerItem)
@@ -86,7 +93,6 @@ class MusicGeneratorService {
         player?.play()
         isPlaying = true
         
-        // 재생 끝나면 자동으로 상태 변경
         NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
             object: playerItem,
@@ -96,7 +102,7 @@ class MusicGeneratorService {
         }
     }
     
-    // MARK: - 정지
+    // MARK: - 완전 정지 (새 분위기 분석 시에만 사용)
     func stop() {
         player?.pause()
         player = nil

@@ -195,20 +195,13 @@ struct ContentView: View {
             // 재생/정지 버튼
             if viewModel.moodResult != nil {
                 Button {
-                    if viewModel.isPlaying {
-                        viewModel.stopMusic()
-                    } else {
-                        if let profile = viewModel.moodResult?.profile {
-                            viewModel.playMusic(profile: profile)
-                        }
-                    }
+                    viewModel.togglePlayPause()  // 토글만 호출, 새 검색 없음
                 } label: {
                     ZStack {
                         Circle()
                             .fill(.white.opacity(0.15))
                             .frame(width: 72, height: 72)
                         
-                        // 수정: 로딩 중이면 스피너 표시
                         if viewModel.isLoadingMusic {
                             ProgressView()
                                 .tint(.white)
